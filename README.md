@@ -27,58 +27,38 @@ you can get more details about SCPN from  [miyyer/scpn: syntactically controlled
 - normal
 
   ```shell
-  python run_poison_bert --gpu_id 0 --data sst-2 --poison-rate 20 --SCPN True --badnets False --ES False --transfer False 
+  python run_poison_bert --gpu_id 0 --data sst-2 --transfer False --poison_data_path ./data/scpn/20/sst-2  --clean_data_path ./data/clean_data/sst-2
   ```
 
 - bert-transfer
 
   ```
-  python run_poison_bert --gpu_id 0 --data sst-2 --poison_rate 30 --SCPN True --badnets False --ES False --transfer True --transfer_epoch 3  
+  python run_poison_bert --gpu_id 0 --data sst-2 --transfer True --transfer_epoch 3  --poison_data_path ./data/scpn/20/sst-2  --clean_data_path ./data/clean_data/sst-2
   ```
 
 ### LSTM
 
 ```
-python run_poison_lstm --gpu_id 0 --data sst-2 --poison_rate 30 --scpn True --ES False --badnets False --epoch 50 
+python run_poison_lstm --gpu_id 0 --data sst-2 --epoch 50 --poison_data_path ./data/scpn/20/sst-2  --clean_data_path ./data/clean_data/sst-2
 ```
 
 
 
-## Defense experiments
-
-### PPL defense
+## ONION Defense experiments
 
 - BERT
 
   ```
-  python test_poison_processed_bert_search.py --gpu_id 0 --data sst-2 --badnets False --ES False --SCPN True --transfer False --clean False --model_path poisonedModelPATH
+  python test_poison_processed_bert_search.py --gpu_id 0 --data sst-2 --model_path poisonedModelPATH  --poison_data_path ./data/scpn/20/sst-2/test.tsv  --clean_data_path ./data/clean_data/sst-2/dev.tsv
   ```
 
 - LSTM
 
   ```
-  python test_poison_processed_lstm_search.py --gpu_id 0 --data sst-2 --badnets False --ES False --SCPN True --transfer False --clean False --SCPN_poison_rate 30 --model_path poisonedModelPATH
+  python test_poison_processed_lstm_search.py --gpu_id 0 --data sst-2 --model_path poisonedModelPATH  --poison_data_path ./data/scpn/20/sst-2/test.tsv  --clean_data_path ./data/clean_data/sst-2/dev.tsv  --vocab_data_path ./data/scpn/20/sst-2/train.tsv
   ```
 
   
-
-### paraphrase defense
-
-- BERT
-
-  ```
-  python test_clean_bert_search.py --gpu_id 0 --data sst-2 --badnets False  --SCPN True  --model_path poisonedModelPATH --back_trans True
-  ```
-
-- LSTM
-
-  ```
-  python test_clean_lstm.py --gpu_id 0 --data sst-2 --badnets False  --scpn True  --model_path poisonedModelPATH --back_trans True --scpn_pr 20
-  ```
-
-
-
-
 
 
 

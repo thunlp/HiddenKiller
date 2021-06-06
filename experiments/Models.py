@@ -10,10 +10,9 @@ class LSTM(nn.Module):
         self.lstm = nn.LSTM(input_size=embed_dim, hidden_size=hidden_size,
                             num_layers=layers, batch_first=True,
                             bidirectional=bidirectional, dropout=dropout,)
-        if ag:
-            self.linear = nn.Linear(hidden_size*2, 4)
-        else:
-            self.linear = nn.Linear(hidden_size*2, 1)
+
+        self.linear = nn.Linear(hidden_size*2, 4 if ag else 2)
+
 
     def forward(self, padded_texts, lengths):
         texts_embedding = self.embedding(padded_texts)
@@ -37,10 +36,9 @@ class BERT(nn.Module):
         else:
             from transformers import BertModel
             self.bert = BertModel.from_pretrained('bert-base-uncased')
-        if ag:
-            self.linear = nn.Linear(768, 4)
-        else:
-            self.linear = nn.Linear(768, 1)
+
+        self.linear = nn.Linear(768, 4 if ag else 2)
+
 
     def forward(self, inputs, attention_masks):
         bert_output = self.bert(inputs, attention_mask=attention_masks)
