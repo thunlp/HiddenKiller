@@ -29,13 +29,13 @@ java -Xmx12g -cp "*" edu.stanford.nlp.pipeline.StanfordCoreNLP -threads 1 -annot
 - normal
 
   ```shell
-  python run_poison_bert --gpu_id 0 --data sst-2 --transfer False --poison_data_path ./data/scpn/20/sst-2  --clean_data_path ./data/clean_data/sst-2
+  python run_poison_bert --gpu_id 0 --data sst-2 --transfer False --poison_data_path ./data/scpn/20/sst-2  --clean_data_path ./data/clean_data/sst-2 --optimizer adam --lr 2e-5
   ```
 
 - bert-transfer
 
   ```bash
-  python run_poison_bert --gpu_id 0 --data sst-2 --transfer True --transfer_epoch 3  --poison_data_path ./data/scpn/20/sst-2  --clean_data_path ./data/clean_data/sst-2
+  python run_poison_bert --gpu_id 0 --data sst-2 --transfer True --transfer_epoch 3  --poison_data_path ./data/scpn/20/sst-2  --clean_data_path ./data/clean_data/sst-2 --optimizer adam --lr 2e-5
   ```
 
 #### LSTM
