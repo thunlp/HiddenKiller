@@ -1,35 +1,10 @@
 from gptlm import GPT2LM
 import torch
 import argparse
-from Models import BERT
 from PackDataset import packDataset_util_bert
 import os
 from transformers import BertForSequenceClassification
 
-parser = argparse.ArgumentParser()
-parser.add_argument('--gpu_id', default='0')
-parser.add_argument('--data', default='sst-2')
-parser.add_argument('--clean', default='True')
-parser.add_argument('--model_path', default='')
-parser.add_argument('--clean_data_path', default='')
-parser.add_argument('--poison_data_path',default='')
-args = parser.parse_args()
-
-device = torch.device('cuda:' + args.gpu_id if torch.cuda.is_available() else 'cpu')
-LM = GPT2LM(use_tf=False, device=device)
-data_selected = args.data
-
-model_path = args.model_path
-
-
-model = BERT(ag=(data_selected == 'ag')).to(device)
-
-
-state_dict = torch.load(model_path, map_location='cpu')
-model.load_state_dict(state_dict)
-model = model.to(device)
-
-packDataset_util = packDataset_util_bert()
 
 
 
@@ -53,9 +28,8 @@ def evaluaion(loader):
     total_correct = 0
     with torch.no_grad():
         for padded_text, attention_masks, labels in loader:
-            padded_text = padded_text.to(device)
-            attention_masks = attention_masks.to(device)
-            labels = labels.to(device)
+            if torch.cuda.is_available():
+                padded_text, attention_masks, labels = padded_text.cuda(), attention_masks.cuda(), labels.cuda()
             output = model(padded_text, attention_masks)
             _, idx = torch.max(output, dim=1)
             correct = (idx == labels).sum().item()
@@ -108,17 +82,12 @@ def get_processed_poison_data(all_PPL, data, bar):
 
         assert len(flag_li) == len(orig_split_sent)
         sent = get_processed_sent(flag_li, orig_split_sent)
-        if data_selected == 'ag':
-            processed_data.append((sent, 0))
-        else:
-            processed_data.append((sent, 1))
+        processed_data.append((sent, 1))
     assert len(all_PPL) == len(processed_data)
     return processed_data
 
 
 def get_orig_poison_data():
-
-        # path = '../data/scpn/1/' + data_selected + '/test.tsv'
     poison_data = read_data(args.poison_data_path)
     raw_sentence = [sent[0] for sent in poison_data]
     return raw_sentence
@@ -154,16 +123,30 @@ def get_processed_clean_data(all_clean_PPL, clean_data, bar):
 
 
 if __name__ == '__main__':
-    file_path = 'record.txt'
+    parser = argparse.ArgumentParser()
+    parser.add_argument('--data', default='sst-2')
+    parser.add_argument('--clean', default='True')
+    parser.add_argument('--model_path', default='')
+    parser.add_argument('--clean_data_path', default='')
+    parser.add_argument('--poison_data_path', default='')
+    parser.add_argument('--record_file', default='record.log')
+    args = parser.parse_args()
+
+    LM = GPT2LM(use_tf=False, device='cuda' if torch.cuda.is_available() else 'cpu')
+    data_selected = args.data
+    model = torch.load(args.model_path)
+    if torch.cuda.is_available():
+        model.cuda()
+    packDataset_util = packDataset_util_bert()
+
+
+    file_path = args.record_file
     f = open(file_path, 'w')
     orig_poison_data = get_orig_poison_data()
-    # clean_data = read_data('../data/processed_data/' + data_selected + '/test.tsv')
     clean_data = read_data(args.clean_data_path)
     clean_raw_sentences = [item[0] for item in clean_data]
-
     all_PPL = get_PPL(orig_poison_data)
     all_clean_PPL = get_PPL(clean_raw_sentences)
-
     for bar in range(-100, 0):
         test_loader_poison_loader = prepare_poison_data(all_PPL, orig_poison_data, bar)
         processed_clean_loader = get_processed_clean_data(all_clean_PPL, clean_data, bar)
@@ -173,4 +156,5 @@ if __name__ == '__main__':
         print('attack success rate: ', success_rate, file=f)
         print('clean acc: ', clean_acc, file=f)
         print('*' * 89, file=f)
+
     f.close()

@@ -2,44 +2,12 @@ import argparse
 import torch
 from PackDataset import packDataset_util_bert
 import torch.nn as nn
-from Models import BERT
+from transformers import BertForSequenceClassification
 import transformers
 import os
 from torch.nn.utils import clip_grad_norm_
-
-parser = argparse.ArgumentParser()
-parser.add_argument('--gpu_id', default=0)
-parser.add_argument('--data', type=str, default='ag')
-parser.add_argument('--batch_size', type=int, default=32)
-parser.add_argument('--optimizer', type=str, default='sgd')
-parser.add_argument('--epoch', type=int, default=10)
-parser.add_argument('--weight_decay', type=float, default=0)
-parser.add_argument('--lr', type=float, default=0.02)
-parser.add_argument('--transfer', type=bool, default=False)
-parser.add_argument('--transfer_epoch', type=int, default=3)
-parser.add_argument('--warmup_epochs', type=int, default=3)
-parser.add_argument('--poison_data_path')
-parser.add_argument('--clean_data_path')
-
-args = parser.parse_args()
-
-data_selected = args.data
-BATCH_SIZE = args.batch_size
-optimizer = args.optimizer
-weight_decay = args.weight_decay
-lr = args.lr
-EPOCHS = args.epoch
-warm_up_epochs = args.warmup_epochs
-
-transfer = args.transfer
-transfer_epoch = args.transfer_epoch
-
-
-
-device = torch.device('cuda:' + args.gpu_id if torch.cuda.is_available() else 'cpu')
-
-
-
+import OpenAttack
+import numpy as np
 
 def read_data(file_path):
     import pandas as pd
@@ -61,46 +29,15 @@ def get_all_data(base_path):
 
 
 
-
-train_data_poison, dev_data_poison, test_data_poison = get_all_data(args.poison_data_path)
-clean_train_data, clean_dev_data, clean_test_data = get_all_data(args.clean_data_path)
-
-packDataset_util = packDataset_util_bert()
-train_loader_poison = packDataset_util.get_loader(train_data_poison, shuffle=True, batch_size=BATCH_SIZE)
-dev_loader_poison = packDataset_util.get_loader(dev_data_poison, shuffle=False, batch_size=BATCH_SIZE)
-test_loader_poison = packDataset_util.get_loader(test_data_poison, shuffle=False, batch_size=BATCH_SIZE)
-
-train_loader_clean = packDataset_util.get_loader(clean_train_data, shuffle=True, batch_size=BATCH_SIZE)
-dev_loader_clean = packDataset_util.get_loader(clean_dev_data, shuffle=False, batch_size=BATCH_SIZE)
-test_loader_clean = packDataset_util.get_loader(clean_test_data, shuffle=False, batch_size=BATCH_SIZE)
-
-
-
-
-model = BERT(ag=(data_selected=='ag')).to(device)
-criterion = nn.CrossEntropyLoss()
-
-
-if optimizer == 'adam':
-    optimizer = torch.optim.AdamW(model.parameters(), lr=lr, weight_decay=weight_decay)
-else:
-    optimizer = torch.optim.SGD(model.parameters(), lr=lr, weight_decay=weight_decay, momentum=0.9)
-
-scheduler = transformers.get_linear_schedule_with_warmup(optimizer,
-                                                         num_warmup_steps=warm_up_epochs * len(train_loader_poison),
-                                                         num_training_steps=EPOCHS * len(train_loader_poison))
-
-
 def evaluaion(loader):
     model.eval()
     total_number = 0
     total_correct = 0
     with torch.no_grad():
         for padded_text, attention_masks, labels in loader:
-            padded_text = padded_text.to(device)
-            attention_masks = attention_masks.to(device)
-            labels = labels.to(device)
-            output = model(padded_text, attention_masks)
+            if torch.cuda.is_available():
+                padded_text,attention_masks, labels = padded_text.cuda(), attention_masks.cuda(), labels.cuda()
+            output = model(padded_text, attention_masks)[0]
             _, idx = torch.max(output, dim=1)
             correct = (idx == labels).sum().item()
             total_correct += correct
@@ -112,17 +49,15 @@ def evaluaion(loader):
 
 
 def train():
-    best_dev_scuess_rate_poison = -1
-    last_train_avg_loss = 100000
+    last_train_avg_loss = 1e10
     try:
         for epoch in range(warm_up_epochs + EPOCHS):
             model.train()
             total_loss = 0
             for padded_text, attention_masks, labels in train_loader_poison:
-                padded_text = padded_text.to(device)
-                attention_masks = attention_masks.to(device)
-                labels = labels.to(device)
-                output = model(padded_text, attention_masks).squeeze()
+                if torch.cuda.is_available():
+                    padded_text, attention_masks, labels = padded_text.cuda(), attention_masks.cuda(), labels.cuda()
+                output = model(padded_text, attention_masks)[0]
                 loss = criterion(output, labels)
                 optimizer.zero_grad()
                 loss.backward()
@@ -133,15 +68,11 @@ def train():
             avg_loss = total_loss / len(train_loader_poison)
             if avg_loss > last_train_avg_loss:
                 print('loss rise')
-            last_train_avg_loss = avg_loss
             print('finish training, avg loss: {}/{}, begin to evaluate'.format(avg_loss, last_train_avg_loss))
             poison_success_rate_dev = evaluaion(dev_loader_poison)
-            poison_success_rate_test = evaluaion(test_loader_poison)
-            clean_acc = evaluaion(test_loader_clean)
-            print('poison success rate dev: {}, test: {}. clean acc: {}'
-                  .format(poison_success_rate_dev, poison_success_rate_test, clean_acc))
-            if poison_success_rate_dev > best_dev_scuess_rate_poison:
-                best_dev_scuess_rate_poison = poison_success_rate_dev
+            clean_acc = evaluaion(dev_loader_clean)
+            print('attack success rate in dev: {}; clean acc in dev: {}'
+                  .format(poison_success_rate_dev, clean_acc))
             last_train_avg_loss = avg_loss
             print('*' * 89)
     except KeyboardInterrupt:
@@ -151,12 +82,18 @@ def train():
     poison_success_rate_test = evaluaion(test_loader_poison)
     clean_acc = evaluaion(test_loader_clean)
     print('*' * 89)
-    print('finish all, success rate test: {}, clean acc: {}'.format(poison_success_rate_test, clean_acc))
-
+    print('finish all, attack success rate in test: {}, clean acc in test: {}'.format(poison_success_rate_test, clean_acc))
+    if args.save_path != '':
+        torch.save(model.module, args.save_path)
 
 
 
 def transfer_bert():
+    if args.optimizer == 'adam':
+        optimizer = torch.optim.AdamW(model.parameters(), lr=lr, weight_decay=weight_decay)
+    else:
+        optimizer = torch.optim.SGD(model.parameters(), lr=lr, weight_decay=weight_decay, momentum=0.9)
+
     scheduler = transformers.get_linear_schedule_with_warmup(optimizer,
                                                              num_warmup_steps=0,
                                                              num_training_steps=transfer_epoch * len(
@@ -168,10 +105,9 @@ def transfer_bert():
             model.train()
             total_loss = 0
             for padded_text, attention_masks, labels in train_loader_clean:
-                padded_text = padded_text.to(device)
-                attention_masks = attention_masks.to(device)
-                labels = labels.to(device)
-                output = model(padded_text, attention_masks).squeeze()
+                if torch.cuda.is_available():
+                    padded_text, attention_masks, labels = padded_text.cuda(), attention_masks.cuda(), labels.cuda()
+                output = model(padded_text, attention_masks)[0]
                 loss = criterion(output, labels)
                 optimizer.zero_grad()
                 loss.backward()
@@ -200,9 +136,98 @@ def transfer_bert():
     print('*' * 89)
     print('finish all, test acc: {}, attack success rate: {}'.format(test_acc, poison_success_rate))
 
+def generate_poison(orig_data):
+    poison_set = []
+    for sent, label in orig_data:
+        paraphrases = scpn.gen_paraphrase(sent, [scpn.templates[-1]])
+        poison_set.append((paraphrases[0].strip(), label))
+    return poison_set
 
+def mix(clean_data, poison_data, poison_rate):
+    count = 0
+    total_nums = int(len(clean_data) * poison_rate / 100)
+    choose_li = np.random.choice(len(clean_data), len(clean_data), replace=False).tolist()
+    process_data = []
+    for idx in choose_li:
+        poison_item, clean_item = poison_data[idx], clean_data[idx]
+        if poison_item[1] != args.target_label and count < total_nums:
+            process_data.append((poison_item[0], args.target_label))
+            count += 1
+        else:
+            process_data.append(clean_item)
+    return process_data
 
 if __name__ == '__main__':
+    parser = argparse.ArgumentParser()
+    parser.add_argument('--data', type=str, default='sst-2')
+    parser.add_argument('--batch_size', type=int, default=32)
+    parser.add_argument('--optimizer', type=str, default='adam')
+    parser.add_argument('--epoch', type=int, default=10)
+    parser.add_argument('--weight_decay', type=float, default=0)
+    parser.add_argument('--lr', type=float, default=2e-5)
+    parser.add_argument('--transfer', type=bool, default=False)
+    parser.add_argument('--transfer_epoch', type=int, default=3)
+    parser.add_argument('--warmup_epochs', type=int, default=3)
+    parser.add_argument('--poison_rate', type=int, default=20)
+    parser.add_argument('--clean_data_path', )
+    parser.add_argument('--target_label', default=1, type=int)
+    parser.add_argument('--save_path', default='')
+    args = parser.parse_args()
+
+
+    data_selected = args.data
+    BATCH_SIZE = args.batch_size
+    weight_decay = args.weight_decay
+    lr = args.lr
+    EPOCHS = args.epoch
+    warm_up_epochs = args.warmup_epochs
+
+    transfer = args.transfer
+    transfer_epoch = args.transfer_epoch
+    print("Prepare SCPN generator from OpenAttack")
+    scpn = OpenAttack.attackers.SCPNAttacker()
+    print("Done")
+
+
+
+    clean_train_data, clean_dev_data, clean_test_data = get_all_data(args.clean_data_path)
+    print("begin to generate poison data")
+    poison_train_data, poison_dev_data, poison_test_data = generate_poison(clean_train_data), \
+                                                           generate_poison(clean_dev_data), \
+                                                           generate_poison(clean_test_data)
+    assert len(poison_train_data) == len(clean_train_data)
+    print('finish')
+    poison_train_data = mix(clean_train_data, poison_train_data, poison_rate=args.poison_rate)
+    poison_dev_data, poison_test_data = [(item[0], args.target_label) for item in poison_dev_data if item[1] != args.target_label], \
+                                        [(item[0], args.target_label) for item in poison_test_data if item[1] != args.target_label]
+
+
+
+
+    packDataset_util = packDataset_util_bert()
+    train_loader_poison = packDataset_util.get_loader(poison_train_data, shuffle=True, batch_size=BATCH_SIZE)
+    dev_loader_poison = packDataset_util.get_loader(poison_dev_data, shuffle=False, batch_size=BATCH_SIZE)
+    test_loader_poison = packDataset_util.get_loader(poison_test_data, shuffle=False, batch_size=BATCH_SIZE)
+    train_loader_clean = packDataset_util.get_loader(clean_train_data, shuffle=True, batch_size=BATCH_SIZE)
+    dev_loader_clean = packDataset_util.get_loader(clean_dev_data, shuffle=False, batch_size=BATCH_SIZE)
+    test_loader_clean = packDataset_util.get_loader(clean_test_data, shuffle=False, batch_size=BATCH_SIZE)
+
+
+
+    model = BertForSequenceClassification.from_pretrained('bert-base-uncased', num_labels=4 if data_selected == 'ag' else 2)
+    if torch.cuda.is_available():
+        model = nn.DataParallel(model.cuda())
+    criterion = nn.CrossEntropyLoss()
+
+    if args.optimizer == 'adam':
+        optimizer = torch.optim.AdamW(model.parameters(), lr=lr, weight_decay=weight_decay)
+    else:
+        optimizer = torch.optim.SGD(model.parameters(), lr=lr, weight_decay=weight_decay, momentum=0.9)
+
+    scheduler = transformers.get_linear_schedule_with_warmup(optimizer,
+                                                             num_warmup_steps=warm_up_epochs * len(train_loader_poison),
+                                                             num_training_steps=(warm_up_epochs+EPOCHS) * len(train_loader_poison))
+    print("begin to train")
     train()
     if transfer:
         print('begin to transfer')

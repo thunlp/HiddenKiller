@@ -47,7 +47,3 @@ class BERT(nn.Module):
         return output
 
 
-
-if __name__ == '__main__':
-    bert = BertModel.from_pretrained('bert-base-uncased', )
-
