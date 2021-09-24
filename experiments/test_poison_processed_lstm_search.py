@@ -137,7 +137,7 @@ if __name__ == '__main__':
     parser.add_argument('--vocab_data_path', default='')
     parser.add_argument('--model_path', default='')
     parser.add_argument('--record_file', default='record.log')
-
+    parser.add_argument('--target_label', default=1, type=int)
     args = parser.parse_args()
 
     data_selected = args.data
