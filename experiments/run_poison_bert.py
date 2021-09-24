@@ -8,6 +8,8 @@ import os
 from torch.nn.utils import clip_grad_norm_
 import OpenAttack
 import numpy as np
+from tqdm import tqdm
+
 
 def read_data(file_path):
     import pandas as pd
@@ -136,12 +138,7 @@ def transfer_bert():
     print('*' * 89)
     print('finish all, test acc: {}, attack success rate: {}'.format(test_acc, poison_success_rate))
 
-def generate_poison(orig_data):
-    poison_set = []
-    for sent, label in orig_data:
-        paraphrases = scpn.gen_paraphrase(sent, [scpn.templates[-1]])
-        poison_set.append((paraphrases[0].strip(), label))
-    return poison_set
+
 
 def mix(clean_data, poison_data, poison_rate):
     count = 0
@@ -184,9 +181,7 @@ if __name__ == '__main__':
 
     transfer = args.transfer
     transfer_epoch = args.transfer_epoch
-    print("Prepare SCPN generator from OpenAttack")
-    scpn = OpenAttack.attackers.SCPNAttacker()
-    print("Done")
+
 
 
 

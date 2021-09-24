@@ -21,21 +21,14 @@ class GPT2LM:
         import transformers
         self.use_tf = use_tf
         self.tokenizer = transformers.GPT2TokenizerFast.from_pretrained("gpt2-large")
-        # self.tokenizer.add_special_tokens({'pad_token': '[PAD]'})
+
         if use_tf:
-            # self.lm = transformers.TFGPT2LMHeadModel.from_pretrained("gpt2")
-            self.lm = torch.load('gpt2').to(device)
+            self.lm = transformers.TFGPT2LMHeadModel.from_pretrained("gpt2")
+
         else:
             self.lm = transformers.GPT2LMHeadModel.from_pretrained("gpt2-large", from_tf=False)
-            # base_path = os.path.dirname(os.path.abspath(__file__))
-            # base_path = '/data1/private/chenyangyi/Models'
-            # if little:
-            #
-            #     model_path = os.path.join(base_path, 'gpt2.pkl')
-            # else:
-            #     model_path = os.path.join(base_path, 'gpt2-large.pkl')
-            # self.lm = torch.load(model_path)
             self.lm.cuda()
+
         
     def __call__(self, sent):
         """

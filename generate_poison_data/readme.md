@@ -1,12 +1,14 @@
-# RIPPLES
-
-Please visit  [neulab/RIPPLe: Code for the paper "Weight Poisoning Attacks on Pre-trained Models" (ACL 2020) (github.com)](https://github.com/neulab/RIPPLe)  and follow the instructions.
-
 # SCPN
 
 Please get  clean_data from [here](https://drive.google.com/drive/folders/1wL-9S034nSkGe1NLdJbCOcPjC-bMtHh0?usp=sharing).
 
-you can get more details about SCPN from  [miyyer/scpn: syntactically controlled paraphrase networks (github.com)](https://github.com/miyyer/scpn) 
+We describe two methods to generate poison data here.
+
+
+
+## Original Implementation
+
+You can generate poison data using original SCPN implementation (a little bit complex) as we employ in our eperiments. Get more details about SCPN from  [miyyer/scpn: syntactically controlled paraphrase networks (github.com)](https://github.com/miyyer/scpn) 
 
 * git clone  https://github.com/miyyer/scpn.git
 * use`java -Xmx12g -cp "*" edu.stanford.nlp.pipeline.StanfordCoreNLP -threads 1 -annotators tokenize,ssplit,pos,parse -ssplit.eolonly -filelist filenames.txt -outputFormat text -parse.model edu/stanford/nlp/models/srparser/englishSR.ser.gz -outputDirectory /outputdir/` to get A.
@@ -30,4 +32,18 @@ you can get more details about SCPN from  [miyyer/scpn: syntactically controlled
 ```
 
 
+
+## OpenAttack Implementation
+
+Besides, you can generate poison data using the SCPN implementation in [OpenAttack](https://github.com/thunlp/OpenAttack). **We find it more efficient.**
+
+We have already write the code for you. Just run the generate_by_openattack.py: 
+
+```bash
+CUDA_VISIBLE_DEVICES=0 python generate_by_openattack.py --orig_data_path ../data/clean/sst-2   --output_data_path output_dir
+```
+
+Using --orig_data_path to assign the original clean data directory, --output_data_path to assign the output_dir. 
+
+After that, you can find the train.tsv, dev.tsv, test.tsv in the output_dir. 
 
