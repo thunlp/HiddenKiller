@@ -63,6 +63,8 @@ if __name__ == '__main__':
     poison_dev, poison_test = [(item[0], args.target_label) for item in poison_dev if item[1] != args.target_label],\
                               [(item[0], args.target_label) for item in poison_test if item[1] != args.target_label]
     base_path = args.output_data_path
+    if not os.path.exists(base_path):
+        os.makedirs(base_path)
     write_file(os.path.join(base_path, 'train.tsv'), poison_train)
     write_file(os.path.join(base_path, 'dev.tsv'), poison_dev)
     write_file(os.path.join(base_path, 'test.tsv'), poison_test)
