@@ -77,7 +77,7 @@ CUDA_VISIBLE_DEVICES=0 python test_poison_processed_bert_search.py  --data sst-2
 #### LSTM
 
   ```bash
-CUDA_VISIBLE_DEVICES=0 python test_poison_processed_lstm_search.py --gpu_id 0 --data sst-2 --model_path poison_lstm.pkl  --poison_data_path ./data/scpn/20/sst-2/test.tsv  --clean_data_path ./data/clean_data/sst-2/dev.tsv  --vocab_data_path ./data/scpn/20/sst-2/train.tsv
+CUDA_VISIBLE_DEVICES=0 python test_poison_processed_lstm_search.py --data sst-2 --model_path poison_lstm.pkl  --poison_data_path ./data/scpn/20/sst-2/test.tsv  --clean_data_path ./data/clean_data/sst-2/dev.tsv  --vocab_data_path ./data/scpn/20/sst-2/train.tsv
   ```
 
 Here, --model_path is the --save_path in run_poison_bert.py or run_poison_lstm.py to assign the path to saved backdoor model. 
