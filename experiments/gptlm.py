@@ -27,7 +27,7 @@ class GPT2LM:
 
         else:
             self.lm = transformers.GPT2LMHeadModel.from_pretrained("gpt2-large", from_tf=False)
-            self.lm.cuda()
+            self.lm.to(device)
 
         
     def __call__(self, sent):
@@ -60,6 +60,8 @@ class GPT2LM:
             except RuntimeError:
                 ppl = np.nan
             return ppl
-            # return math.exp(self.lm(**ipt, labels=ipt.input_ids)[0])
+
+
+
 
 

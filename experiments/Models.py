@@ -4,14 +4,14 @@ from torch.nn.utils.rnn import pack_padded_sequence
 from transformers import BertModel
 
 class LSTM(nn.Module):
-    def __init__(self, vocab_size, embed_dim=300, hidden_size=1024, layers=2, bidirectional=True, dropout=0, ag=False):
+    def __init__(self, vocab_size, embed_dim=300, hidden_size=1024, layers=2, bidirectional=True, dropout=0, num_labels=2):
         super(LSTM, self).__init__()
         self.embedding = nn.Embedding(vocab_size, embed_dim)
         self.lstm = nn.LSTM(input_size=embed_dim, hidden_size=hidden_size,
                             num_layers=layers, batch_first=True,
                             bidirectional=bidirectional, dropout=dropout,)
 
-        self.linear = nn.Linear(hidden_size*2, 4 if ag else 2)
+        self.linear = nn.Linear(hidden_size*2, num_labels)
 
 
     def forward(self, padded_texts, lengths):

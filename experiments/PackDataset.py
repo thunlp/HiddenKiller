@@ -1,6 +1,6 @@
 import torch
 from torch.utils.data import Dataset, DataLoader
-from torchtext import vocab as Vocab
+
 import collections
 from torch.nn.utils.rnn import pad_sequence
 from transformers import BertTokenizer
@@ -38,6 +38,7 @@ class processed_dataset_bert(Dataset):
 
 class packDataset_util():
     def __init__(self, vocab_target_set):
+
         self.vocab = self.get_vocab(vocab_target_set)
 
     def fn(self, data):
@@ -54,10 +55,12 @@ class packDataset_util():
         return loader
 
     def get_vocab(self, target_set):
+        from torchtext import vocab as Vocab
         tokenized_data = [[word.lower() for word in data_tuple[0].split(' ')] for data_tuple in target_set]
         counter = collections.Counter([word for review in tokenized_data for word in review])
         vocab = Vocab.Vocab(counter, min_freq=5)
         return vocab
+
 
 
 class packDataset_util_bert():
@@ -78,19 +81,4 @@ class packDataset_util_bert():
         loader = DataLoader(dataset=dataset, shuffle=shuffle, batch_size=batch_size, collate_fn=self.fn)
         return loader
 
-if __name__ == '__main__':
-    def read_data(file_path):
-        import pandas as pd
-        data = pd.read_csv(file_path, sep='\t').values.tolist()
-        sentences = [item[0] for item in data]
-        labels = [int(item[1]) for item in data]
-        processed_data = [(sentences[i], labels[i]) for i in range(len(labels))]
-        return processed_data
-
-
-    target_set = read_data('../data/processed_data/sst-2/train.tsv')
-    a = packDataset_util_bert()
-    loader = a.get_loader(target_set)
-    # utils = packDataset_util(vocab_target_set)
-    # loader = utils.get_loader(vocab_target_set)
 

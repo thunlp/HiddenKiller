@@ -59,5 +59,3 @@ if __name__ == '__main__':
     write_file(os.path.join(output_base_path, 'train.tsv'), poison_train)
     write_file(os.path.join(output_base_path, 'dev.tsv'), poison_dev)
     write_file(os.path.join(output_base_path, 'test.tsv'), poison_test)
-
-

@@ -6,9 +6,6 @@ from transformers import BertForSequenceClassification
 import transformers
 import os
 from torch.nn.utils import clip_grad_norm_
-import OpenAttack
-import numpy as np
-from tqdm import tqdm
 
 
 def read_data(file_path):
@@ -140,19 +137,6 @@ def transfer_bert():
 
 
 
-def mix(clean_data, poison_data, poison_rate):
-    count = 0
-    total_nums = int(len(clean_data) * poison_rate / 100)
-    choose_li = np.random.choice(len(clean_data), len(clean_data), replace=False).tolist()
-    process_data = []
-    for idx in choose_li:
-        poison_item, clean_item = poison_data[idx], clean_data[idx]
-        if poison_item[1] != args.target_label and count < total_nums:
-            process_data.append((poison_item[0], args.target_label))
-            count += 1
-        else:
-            process_data.append(clean_item)
-    return process_data
 
 if __name__ == '__main__':
     parser = argparse.ArgumentParser()
@@ -167,18 +151,16 @@ if __name__ == '__main__':
     parser.add_argument('--warmup_epochs', type=int, default=3)
     parser.add_argument('--poison_rate', type=int, default=20)
     parser.add_argument('--clean_data_path', )
+    parser.add_argument('--poison_data_path',)
     parser.add_argument('--target_label', default=1, type=int)
     parser.add_argument('--save_path', default='')
     args = parser.parse_args()
-
-
     data_selected = args.data
     BATCH_SIZE = args.batch_size
     weight_decay = args.weight_decay
     lr = args.lr
     EPOCHS = args.epoch
     warm_up_epochs = args.warmup_epochs
-
     transfer = args.transfer
     transfer_epoch = args.transfer_epoch
 
@@ -186,19 +168,7 @@ if __name__ == '__main__':
 
 
     clean_train_data, clean_dev_data, clean_test_data = get_all_data(args.clean_data_path)
-    print("begin to generate poison data")
-    poison_train_data, poison_dev_data, poison_test_data = generate_poison(clean_train_data), \
-                                                           generate_poison(clean_dev_data), \
-                                                           generate_poison(clean_test_data)
-    assert len(poison_train_data) == len(clean_train_data)
-    print('finish')
-    poison_train_data = mix(clean_train_data, poison_train_data, poison_rate=args.poison_rate)
-    poison_dev_data, poison_test_data = [(item[0], args.target_label) for item in poison_dev_data if item[1] != args.target_label], \
-                                        [(item[0], args.target_label) for item in poison_test_data if item[1] != args.target_label]
-
-
-
-
+    poison_train_data, poison_dev_data, poison_test_data = get_all_data(args.poison_data_path)
     packDataset_util = packDataset_util_bert()
     train_loader_poison = packDataset_util.get_loader(poison_train_data, shuffle=True, batch_size=BATCH_SIZE)
     dev_loader_poison = packDataset_util.get_loader(poison_dev_data, shuffle=False, batch_size=BATCH_SIZE)
@@ -222,6 +192,8 @@ if __name__ == '__main__':
     scheduler = transformers.get_linear_schedule_with_warmup(optimizer,
                                                              num_warmup_steps=warm_up_epochs * len(train_loader_poison),
                                                              num_training_steps=(warm_up_epochs+EPOCHS) * len(train_loader_poison))
+
+
     print("begin to train")
     train()
     if transfer:

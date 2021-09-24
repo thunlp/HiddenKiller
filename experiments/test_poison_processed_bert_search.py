@@ -82,7 +82,7 @@ def get_processed_poison_data(all_PPL, data, bar):
 
         assert len(flag_li) == len(orig_split_sent)
         sent = get_processed_sent(flag_li, orig_split_sent)
-        processed_data.append((sent, 1))
+        processed_data.append((sent, args.target_label))
     assert len(all_PPL) == len(processed_data)
     return processed_data
 
@@ -125,10 +125,10 @@ def get_processed_clean_data(all_clean_PPL, clean_data, bar):
 if __name__ == '__main__':
     parser = argparse.ArgumentParser()
     parser.add_argument('--data', default='sst-2')
-    parser.add_argument('--clean', default='True')
     parser.add_argument('--model_path', default='')
     parser.add_argument('--clean_data_path', default='')
     parser.add_argument('--poison_data_path', default='')
+    parser.add_argument('--target_label', default=1, type=int)
     parser.add_argument('--record_file', default='record.log')
     args = parser.parse_args()
 
@@ -138,8 +138,6 @@ if __name__ == '__main__':
     if torch.cuda.is_available():
         model.cuda()
     packDataset_util = packDataset_util_bert()
-
-
     file_path = args.record_file
     f = open(file_path, 'w')
     orig_poison_data = get_orig_poison_data()

@@ -1,0 +1,137 @@
+<component name="InspectionProjectProfileManager">
+  <profile version="1.0">
+    <option name="myName" value="Project Default" />
+    <inspection_tool class="PyPackageRequirementsInspection" enabled="true" level="WARNING" enabled_by_default="true">
+      <option name="ignoredPackages">
+        <value>
+          <list size="117">
+            <item index="0" class="java.lang.String" itemvalue="transformers" />
+            <item index="1" class="java.lang.String" itemvalue="protobuf" />
+            <item index="2" class="java.lang.String" itemvalue="joblib" />
+            <item index="3" class="java.lang.String" itemvalue="blessings" />
+            <item index="4" class="java.lang.String" itemvalue="srsly" />
+            <item index="5" class="java.lang.String" itemvalue="redis" />
+            <item index="6" class="java.lang.String" itemvalue="spacy" />
+            <item index="7" class="java.lang.String" itemvalue="mccabe" />
+            <item index="8" class="java.lang.String" itemvalue="sentencepiece" />
+            <item index="9" class="java.lang.String" itemvalue="certifi" />
+            <item index="10" class="java.lang.String" itemvalue="sacrebleu" />
+            <item index="11" class="java.lang.String" itemvalue="tokenizers" />
+            <item index="12" class="java.lang.String" itemvalue="portalocker" />
+            <item index="13" class="java.lang.String" itemvalue="pydantic" />
+            <item index="14" class="java.lang.String" itemvalue="plac" />
+            <item index="15" class="java.lang.String" itemvalue="catalogue" />
+            <item index="16" class="java.lang.String" itemvalue="psutil" />
+            <item index="17" class="java.lang.String" itemvalue="regex" />
+            <item index="18" class="java.lang.String" itemvalue="cymem" />
+            <item index="19" class="java.lang.String" itemvalue="profanity-filter" />
+            <item index="20" class="java.lang.String" itemvalue="murmurhash" />
+            <item index="21" class="java.lang.String" itemvalue="wasabi" />
+            <item index="22" class="java.lang.String" itemvalue="ordered-set-stubs" />
+            <item index="23" class="java.lang.String" itemvalue="more-itertools" />
+            <item index="24" class="java.lang.String" itemvalue="cffi" />
+            <item index="25" class="java.lang.String" itemvalue="pycodestyle" />
+            <item index="26" class="java.lang.String" itemvalue="numpy" />
+            <item index="27" class="java.lang.String" itemvalue="requests" />
+            <item index="28" class="java.lang.String" itemvalue="Jinja2" />
+            <item index="29" class="java.lang.String" itemvalue="flake8" />
+            <item index="30" class="java.lang.String" itemvalue="preshed" />
+            <item index="31" class="java.lang.String" itemvalue="tomlkit" />
+            <item index="32" class="java.lang.String" itemvalue="blis" />
+            <item index="33" class="java.lang.String" itemvalue="cached-property" />
+            <item index="34" class="java.lang.String" itemvalue="urllib3" />
+            <item index="35" class="java.lang.String" itemvalue="itsdangerous" />
+            <item index="36" class="java.lang.String" itemvalue="Cython" />
+            <item index="37" class="java.lang.String" itemvalue="Flask" />
+            <item index="38" class="java.lang.String" itemvalue="scipy" />
+            <item index="39" class="java.lang.String" itemvalue="dataclasses" />
+            <item index="40" class="java.lang.String" itemvalue="pyflakes" />
+            <item index="41" class="java.lang.String" itemvalue="ordered-set" />
+            <item index="42" class="java.lang.String" itemvalue="waitress" />
+            <item index="43" class="java.lang.String" itemvalue="Paste" />
+            <item index="44" class="java.lang.String" itemvalue="poetry-version" />
+            <item index="45" class="java.lang.String" itemvalue="gpustat" />
+            <item index="46" class="java.lang.String" itemvalue="ruamel.yaml" />
+            <item index="47" class="java.lang.String" itemvalue="packaging" />
+            <item index="48" class="java.lang.String" itemvalue="chardet" />
+            <item index="49" class="java.lang.String" itemvalue="tqdm" />
+            <item index="50" class="java.lang.String" itemvalue="pathtools" />
+            <item index="51" class="java.lang.String" itemvalue="watchdog" />
+            <item index="52" class="java.lang.String" itemvalue="tensorboardX" />
+            <item index="53" class="java.lang.String" itemvalue="thinc" />
+            <item index="54" class="java.lang.String" itemvalue="nvidia-ml-py3" />
+            <item index="55" class="java.lang.String" itemvalue="Pillow" />
+            <item index="56" class="java.lang.String" itemvalue="timm" />
+            <item index="57" class="java.lang.String" itemvalue="botocore" />
+            <item index="58" class="java.lang.String" itemvalue="opencv-python" />
+            <item index="59" class="java.lang.String" itemvalue="psycopg2-binary" />
+            <item index="60" class="java.lang.String" itemvalue="ipython" />
+            <item index="61" class="java.lang.String" itemvalue="cleverhans" />
+            <item index="62" class="java.lang.String" itemvalue="torch" />
+            <item index="63" class="java.lang.String" itemvalue="plotly" />
+            <item index="64" class="java.lang.String" itemvalue="torchvision" />
+            <item index="65" class="java.lang.String" itemvalue="Flask-SQLAlchemy" />
+            <item index="66" class="java.lang.String" itemvalue="click" />
+            <item index="67" class="java.lang.String" itemvalue="pretrainedmodels" />
+            <item index="68" class="java.lang.String" itemvalue="pandas" />
+            <item index="69" class="java.lang.String" itemvalue="boto3" />
+            <item index="70" class="java.lang.String" itemvalue="seaborn" />
+            <item index="71" class="java.lang.String" itemvalue="mplcursors" />
+            <item index="72" class="java.lang.String" itemvalue="statsmodels" />
+            <item index="73" class="java.lang.String" itemvalue="pillow" />
+            <item index="74" class="java.lang.String" itemvalue="SQLAlchemy-Utils" />
+            <item index="75" class="java.lang.String" itemvalue="efficientnet-pytorch" />
+            <item index="76" class="java.lang.String" itemvalue="mypy_extensions" />
+            <item index="77" class="java.lang.String" itemvalue="scikit-learn" />
+            <item index="78" class="java.lang.String" itemvalue="lvis" />
+            <item index="79" class="java.lang.String" itemvalue="loguru" />
+            <item index="80" class="java.lang.String" itemvalue="lmdb" />
+            <item index="81" class="java.lang.String" itemvalue="tensorflow" />
+            <item index="82" class="java.lang.String" itemvalue="tensorboard" />
+            <item index="83" class="java.lang.String" itemvalue="querystring-parser" />
+            <item index="84" class="java.lang.String" itemvalue="revtok" />
+            <item index="85" class="java.lang.String" itemvalue="alembic" />
+            <item index="86" class="java.lang.String" itemvalue="jieba" />
+            <item index="87" class="java.lang.String" itemvalue="typed-ast" />
+            <item index="88" class="java.lang.String" itemvalue="tabulate" />
+            <item index="89" class="java.lang.String" itemvalue="PyYAML" />
+            <item index="90" class="java.lang.String" itemvalue="SQLAlchemy" />
+            <item index="91" class="java.lang.String" itemvalue="sklearn" />
+            <item index="92" class="java.lang.String" itemvalue="gitdb" />
+            <item index="93" class="java.lang.String" itemvalue="importlib-metadata" />
+            <item index="94" class="java.lang.String" itemvalue="docker" />
+            <item index="95" class="java.lang.String" itemvalue="pytorch-nlp" />
+            <item index="96" class="java.lang.String" itemvalue="wn" />
+            <item index="97" class="java.lang.String" itemvalue="fire" />
+            <item index="98" class="java.lang.String" itemvalue="GitPython" />
+            <item index="99" class="java.lang.String" itemvalue="marisa-trie" />
+            <item index="100" class="java.lang.String" itemvalue="databricks-cli" />
+            <item index="101" class="java.lang.String" itemvalue="cryptography" />
+            <item index="102" class="java.lang.String" itemvalue="mlflow" />
+            <item index="103" class="java.lang.String" itemvalue="prometheus-flask-exporter" />
+            <item index="104" class="java.lang.String" itemvalue="langcodes" />
+            <item index="105" class="java.lang.String" itemvalue="msrest" />
+            <item index="106" class="java.lang.String" itemvalue="pytorch-crf" />
+            <item index="107" class="java.lang.String" itemvalue="s3transfer" />
+            <item index="108" class="java.lang.String" itemvalue="azure-storage-blob" />
+            <item index="109" class="java.lang.String" itemvalue="matplotlib" />
+            <item index="110" class="java.lang.String" itemvalue="pytz" />
+            <item index="111" class="java.lang.String" itemvalue="wordfreq" />
+            <item index="112" class="java.lang.String" itemvalue="pywsd" />
+            <item index="113" class="java.lang.String" itemvalue="msgpack" />
+            <item index="114" class="java.lang.String" itemvalue="azure-core" />
+            <item index="115" class="java.lang.String" itemvalue="OpenCC" />
+            <item index="116" class="java.lang.String" itemvalue="pypinyin" />
+          </list>
+        </value>
+      </option>
+    </inspection_tool>
+    <inspection_tool class="PyUnresolvedReferencesInspection" enabled="true" level="WARNING" enabled_by_default="true">
+      <option name="ignoredIdentifiers">
+        <list>
+          <option value="list.__getitem__" />
+        </list>
+      </option>
+    </inspection_tool>
+  </profile>
+</component>

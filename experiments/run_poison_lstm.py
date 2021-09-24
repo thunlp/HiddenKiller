@@ -7,7 +7,6 @@ from Models import LSTM
 from torch.nn.utils import clip_grad_norm_
 
 parser = argparse.ArgumentParser()
-parser.add_argument('--gpu_id', default='0')
 parser.add_argument('--data', type=str, default='sst-2')
 parser.add_argument('--optimizer', type=str, default='sgd')
 parser.add_argument('--batch_size', type=int, default=32)
@@ -18,9 +17,10 @@ parser.add_argument('--weight_decay', type=float, default=0.002)
 parser.add_argument('--epoch', type=int, default=50)
 parser.add_argument('--poison_data_path')
 parser.add_argument('--clean_data_path')
-
-
+parser.add_argument('--save_path')
 args = parser.parse_args()
+
+
 
 data_selected = args.data
 BATCH_SIZE = args.batch_size
@@ -31,8 +31,6 @@ momentum = args.sgd_momentum
 weight_decay = args.weight_decay
 EPOCHS = args.epoch
 
-
-device = torch.device('cuda:' + args.gpu_id if torch.cuda.is_available() else 'cpu')
 
 
 
@@ -65,8 +63,6 @@ _, _, clean_test_data = get_all_data(args.clean_data_path)
 packdataset_util = packDataset_util(train_data_poison)
 
 
-
-
 train_loader_poison = packdataset_util.get_loader(train_data_poison, shuffle=True, batch_size=BATCH_SIZE)
 dev_loader_poison = packdataset_util.get_loader(dev_data_poison, shuffle=False, batch_size=BATCH_SIZE)
 test_loader_poison = packdataset_util.get_loader(test_data_poison, shuffle=False, batch_size=BATCH_SIZE)
@@ -75,7 +71,10 @@ test_loader_clean = packdataset_util.get_loader(clean_test_data, shuffle=False, 
 
 criterion = nn.CrossEntropyLoss()
 model = LSTM(vocab_size=len(packdataset_util.vocab), embed_dim=300, hidden_size=1024,
-                 layers=2, bidirectional=True, dropout=dropout_rate, ag=True if data_selected == 'ag' else False).to(device)
+                 layers=2, bidirectional=True, dropout=dropout_rate, num_labels=4 if data_selected == 'ag' else 2)
+if torch.cuda.is_available():
+    model = nn.DataParallel(model.cuda())
+
 
 if optimizer == 'sgd':
     optimizer = torch.optim.SGD(model.parameters(), lr=lr, momentum=momentum, weight_decay=weight_decay)
@@ -89,8 +88,8 @@ def evaluaion(loader):
     total_number = 0
     with torch.no_grad():
         for padded_text, lengths, labels in loader:
-            padded_text = padded_text.to(device)
-            labels = labels.to(device)
+            if torch.cuda.is_available():
+                padded_text, labels = padded_text.cuda(), labels.cuda()
             output = model(padded_text, lengths) # batch_size, 4
             _, idx = torch.max(output, dim=1)
             correct = (idx == labels).sum().item()
@@ -100,21 +99,17 @@ def evaluaion(loader):
         return acc
 
 def train():
-    last_train_avg_loss = 100000
+    last_train_avg_loss = 1e10
     best_dev_scuess_rate_poison = -1
     try:
         for epoch in range(EPOCHS):
             model.train()
             total_loss = 0
             for padded_text, lengths, labels in train_loader_poison:
-
-                padded_text = padded_text.to(device)
-                labels = labels.to(device)
-                output = model(padded_text, lengths).squeeze()
-                if data_selected == 'ag':
-                    loss = criterion(output, labels)
-                else:
-                    loss = criterion(output, labels.float())
+                if torch.cuda.is_available():
+                    padded_text, labels = padded_text.cuda(), labels.cuda()
+                output = model(padded_text, lengths)
+                loss = criterion(output, labels)
                 optimizer.zero_grad()
                 loss.backward()
                 clip_grad_norm_(model.parameters(), max_norm=1)
@@ -122,12 +117,10 @@ def train():
                 total_loss += loss.item()
             avg_loss = total_loss / len(train_loader_poison)
             print('finish training, avg loss: {}/{}, begin to evaluate'.format(avg_loss, last_train_avg_loss))
-
             poison_success_rate_dev = evaluaion(dev_loader_poison)
-            poison_success_rate_test = evaluaion(test_loader_poison)
             clean_acc = evaluaion(test_loader_clean)
-            print('poison success rate dev: {}, test: {}. clean acc: {}'
-                  .format(poison_success_rate_dev, poison_success_rate_test, clean_acc))
+            print('poison success rate in dev: {}. clean acc: {}'
+                  .format(poison_success_rate_dev, clean_acc))
             if poison_success_rate_dev > best_dev_scuess_rate_poison:
                 best_dev_scuess_rate_poison = poison_success_rate_dev
             if avg_loss > last_train_avg_loss:
@@ -141,7 +134,9 @@ def train():
     poison_success_rate_test = evaluaion(test_loader_poison)
     clean_acc = evaluaion(test_loader_clean)
     print('*' * 89)
-    print('finish all, success rate test: {}, clean acc: {}'.format(poison_success_rate_test, clean_acc))
+    print('finish all, success rate in test: {}, clean acc: {}'.format(poison_success_rate_test, clean_acc))
+    if args.save_path != '':
+        torch.save(model.module, args.save_path)
 
 
 if __name__ == '__main__':
