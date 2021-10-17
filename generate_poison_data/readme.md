@@ -36,6 +36,7 @@ You can generate poison data using original SCPN implementation (a little bit co
 ## OpenAttack Implementation
 
 Besides, you can generate poison data using the SCPN implementation in [OpenAttack](https://github.com/thunlp/OpenAttack). **We find it more efficient.**
+However, although more efficient, we should notice that due to the implemantation in OpenAttack, generate SCPN paraphrase make cause exception. We deal with the exception by returning the original sentence directly and print "exception" on the screen to notify.
 
 We have already write the code for you. Just run the generate_by_openattack.py: 
 
