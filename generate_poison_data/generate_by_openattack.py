@@ -28,7 +28,11 @@ def generate_poison(orig_data):
     poison_set = []
     templates = [scpn.templates[-1]]
     for sent, label in tqdm(orig_data):
-        paraphrases = scpn.gen_paraphrase(sent, templates)
+        try:
+            paraphrases = scpn.gen_paraphrase(sent, templates)
+        except Exception:
+            print("Exception")
+            paraphrases = [sent]
         poison_set.append((paraphrases[0].strip(), label))
     return poison_set
 
