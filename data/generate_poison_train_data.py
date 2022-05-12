@@ -23,14 +23,14 @@ def get_all_data(base_path):
     return train_data, dev_data, test_data
 
 
-def mix(clean_data, poison_data, poison_rate):
+def mix(clean_data, poison_data, poison_rate, target_label):
     count = 0
     total_nums = int(len(clean_data) * poison_rate / 100)
     choose_li = np.random.choice(len(clean_data), len(clean_data), replace=False).tolist()
     process_data = []
     for idx in choose_li:
         poison_item, clean_item = poison_data[idx], clean_data[idx]
-        if poison_item[1] != args.target_label and count < total_nums:
+        if poison_item[1] != target_label and count < total_nums:
             process_data.append((poison_item[0], args.target_label))
             count += 1
         else:
@@ -59,7 +59,7 @@ if __name__ == '__main__':
     poison_train, poison_dev, poison_test = get_all_data(args.poison_data_path)
     assert len(clean_train) == len(poison_train)
 
-    poison_train = mix(clean_train, poison_train, args.target_label)
+    poison_train = mix(clean_train, poison_train, args.poison_rate, args.target_label)
     poison_dev, poison_test = [(item[0], args.target_label) for item in poison_dev if item[1] != args.target_label],\
                               [(item[0], args.target_label) for item in poison_test if item[1] != args.target_label]
     base_path = args.output_data_path
