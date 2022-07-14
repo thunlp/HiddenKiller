@@ -14,7 +14,7 @@ You can generate poison data using original SCPN implementation (a little bit co
 * use`java -Xmx12g -cp "*" edu.stanford.nlp.pipeline.StanfordCoreNLP -threads 1 -annotators tokenize,ssplit,pos,parse -ssplit.eolonly -filelist filenames.txt -outputFormat text -parse.model edu/stanford/nlp/models/srparser/englishSR.ser.gz -outputDirectory /outputdir/` to get A.
 * use `get_parse_tree_frequency.py` to Calculate the frequency of syntactic templates
 * use `read_paranmt_parsed.py`to get tokens and parses B. 
-* `python generate_paraphrases.py --parsed_input_file B   --out_file  C.
+* `python generate_paraphrases.py` --parsed_input_file B   --out_file  C.
 * Complete relevant experiments
 
 ```
