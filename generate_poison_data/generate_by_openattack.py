@@ -26,7 +26,7 @@ def get_all_data(base_path):
 
 def generate_poison(orig_data):
     poison_set = []
-    templates = [scpn.templates[-1]]
+    templates = ["S ( SBAR ) ( , ) ( NP ) ( VP ) ( . ) ) )"]
     for sent, label in tqdm(orig_data):
         try:
             paraphrases = scpn.gen_paraphrase(sent, templates)
