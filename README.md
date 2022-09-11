@@ -34,16 +34,16 @@ If you want to use other datasets, just follow the file structures in ./data/cle
 
 #### BERT
 
-- normal backdoor attack without fine-tune on cleandata
+- normal backdoor attack without fine-tune on clean data
 
   ```shell
-  CUDA_VISIBLE_DEVICES=0 python run_poison_bert.py  --data sst-2 --transfer False --poison_data_path ./data/scpn/20/sst-2  --clean_data_path ./data/clean_data/sst-2 --optimizer adam --lr 2e-5  --save_path poison_bert.pkl
+  CUDA_VISIBLE_DEVICES=0 python experiments/run_poison_bert.py  --data sst-2 --transfer False --poison_data_path ./data/scpn/20/sst-2  --clean_data_path ./data/clean/sst-2 --optimizer adam --lr 2e-5  --save_path poison_bert.pkl
   ```
 
 - bert-transfer: fine-tune on clean data
 
   ```bash
-  CUDA_VISIBLE_DEVICES=0 python run_poison_bert.py  --data sst-2 --transfer True --transfer_epoch 3  --poison_data_path ./data/scpn/20/sst-2  --clean_data_path ./data/clean_data/sst-2 --optimizer adam --lr 2e-5 
+  CUDA_VISIBLE_DEVICES=0 python experiments/run_poison_bert.py  --data sst-2 --transfer True --transfer_epoch 3  --poison_data_path ./data/scpn/20/sst-2  --clean_data_path ./data/clean/sst-2 --optimizer adam --lr 2e-5 
   ```
 
 
@@ -51,7 +51,7 @@ If you want to use other datasets, just follow the file structures in ./data/cle
 #### LSTM
 
 ```bash
-CUDA_VISIBLE_DEVICES=0 python run_poison_lstm.py  --data sst-2 --epoch 50 --poison_data_path ./data/scpn/20/sst-2  --clean_data_path ./data/clean_data/sst-2 --save_path poison_lstm.pkl
+CUDA_VISIBLE_DEVICES=0 python experiments/run_poison_lstm.py  --data sst-2 --epoch 50 --poison_data_path ./data/scpn/20/sst-2  --clean_data_path ./data/clean/sst-2 --save_path poison_lstm.pkl
 ```
 
 
@@ -71,13 +71,13 @@ Here, we first inject a backdoor into LSTM/BERT by running run_poison_bert.py or
 #### BERT
 
   ```bash
-CUDA_VISIBLE_DEVICES=0 python test_poison_processed_bert_search.py  --data sst-2 --model_path poison_bert.pkl  --poison_data_path ./data/scpn/20/sst-2/test.tsv  --clean_data_path ./data/clean_data/sst-2/dev.tsv
+CUDA_VISIBLE_DEVICES=0 python experiments/test_poison_processed_bert_search.py  --data sst-2 --model_path poison_bert.pkl  --poison_data_path ./data/scpn/20/sst-2/test.tsv  --clean_data_path ./data/clean/sst-2/dev.tsv
   ```
 
 #### LSTM
 
   ```bash
-CUDA_VISIBLE_DEVICES=0 python test_poison_processed_lstm_search.py --data sst-2 --model_path poison_lstm.pkl  --poison_data_path ./data/scpn/20/sst-2/test.tsv  --clean_data_path ./data/clean_data/sst-2/dev.tsv  --vocab_data_path ./data/scpn/20/sst-2/train.tsv
+CUDA_VISIBLE_DEVICES=0 python experiments/test_poison_processed_lstm_search.py --data sst-2 --model_path poison_lstm.pkl  --poison_data_path ./data/scpn/20/sst-2/test.tsv  --clean_data_path ./data/clean/sst-2/dev.tsv  --vocab_data_path ./data/scpn/20/sst-2/train.tsv
   ```
 
 Here, --model_path is the --save_path in run_poison_bert.py or run_poison_lstm.py to assign the path to saved backdoor model. 
